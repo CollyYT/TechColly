@@ -1,4 +1,3 @@
-1.90 KB
 const EventEmitter = require('events');
 const emitter = new EventEmitter();
 emitter.setMaxListeners(Number.POSITIVE_INFINITY);
